@@ -30,6 +30,13 @@ except ImportError:
     HAS_AZURE_EMBEDDER = False
 
 try:
+    from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
+
+    HAS_OPENAI_GENERIC = True
+except ImportError:
+    HAS_OPENAI_GENERIC = False
+
+try:
     from graphiti_core.embedder.gemini import GeminiEmbedder
 
     HAS_GEMINI_EMBEDDER = True
@@ -143,6 +150,36 @@ class LLMClientFactory:
                 else:
                     # For non-reasoning models, explicitly pass None to disable these parameters
                     return OpenAIClient(config=llm_config, reasoning=None, verbosity=None)
+
+            case 'openai_generic':
+                if not HAS_OPENAI_GENERIC:
+                    raise ValueError(
+                        'OpenAI Generic client not available in current graphiti-core version'
+                    )
+                if not config.providers.openai_generic:
+                    raise ValueError('OpenAI Generic provider configuration not found')
+
+                generic_config = config.providers.openai_generic
+                api_key = generic_config.api_key or 'not-needed'
+
+                logger.info(
+                    f'Creating OpenAI Generic client (for Ollama/LM Studio) at {generic_config.api_url}'
+                )
+
+                from graphiti_core.llm_client.config import LLMConfig as CoreLLMConfig
+
+                llm_config = CoreLLMConfig(
+                    api_key=api_key,
+                    base_url=generic_config.api_url,
+                    model=config.model,
+                    temperature=config.temperature,
+                    max_tokens=generic_config.max_tokens,
+                )
+
+                return OpenAIGenericClient(
+                    config=llm_config,
+                    max_tokens=generic_config.max_tokens,
+                )
 
             case 'azure_openai':
                 if not HAS_AZURE_LLM:

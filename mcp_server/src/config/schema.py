@@ -92,6 +92,14 @@ class OpenAIProviderConfig(BaseModel):
     organization_id: str | None = None
 
 
+class OpenAIGenericProviderConfig(BaseModel):
+    """OpenAI-compatible generic provider configuration (for Ollama, LM Studio, etc.)."""
+
+    api_key: str | None = 'not-needed'
+    api_url: str = 'http://localhost:11434/v1'
+    max_tokens: int = 16384
+
+
 class AzureOpenAIProviderConfig(BaseModel):
     """Azure OpenAI provider configuration."""
 
@@ -137,6 +145,7 @@ class LLMProvidersConfig(BaseModel):
     """LLM providers configuration."""
 
     openai: OpenAIProviderConfig | None = None
+    openai_generic: OpenAIGenericProviderConfig | None = None
     azure_openai: AzureOpenAIProviderConfig | None = None
     anthropic: AnthropicProviderConfig | None = None
     gemini: GeminiProviderConfig | None = None
