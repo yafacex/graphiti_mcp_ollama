@@ -7,15 +7,21 @@ server:
   port: 8000
   
 llm:
-  provider: "openai"  # Options: openai, azure_openai, anthropic, gemini, groq
+  provider: "openai_generic"  # Options: openai, openai_generic, azure_openai, anthropic, gemini, groq
   model: "gpt-4o-mini"
   max_tokens: 4096
+  temperature: 0.0
   
   providers:
     openai:
       api_key: ${OPENAI_API_KEY}
       api_url: ${OPENAI_API_URL:https://api.openai.com/v1}
       organization_id: ${OPENAI_ORGANIZATION_ID:}
+      
+    openai_generic:
+      api_key: ${OPENAI_API_KEY:not-needed}
+      api_url: ${OPENAI_API_URL:http://localhost:11434/v1}
+      max_tokens: 4096
       
     azure_openai:
       api_key: ${AZURE_OPENAI_API_KEY}
