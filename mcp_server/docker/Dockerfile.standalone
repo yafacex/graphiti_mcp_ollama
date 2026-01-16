@@ -30,19 +30,20 @@ WORKDIR /app/mcp
 # Accept graphiti-core version as build argument
 ARG GRAPHITI_CORE_VERSION=0.23.1
 
-# Copy project files for dependency installation
+# First copy graphiti-core source code
+COPY ../graphiti_core /app/graphiti_core
+COPY ../pyproject.toml /app/pyproject.toml
+
+# Then copy mcp project files
 COPY pyproject.toml uv.lock ./
 
-# For local development with modified graphiti-core, keep the local path
-# For production, comment out the next line to use PyPI version
-# RUN sed -i '/\[tool\.uv\.sources\]/,/graphiti-core/d' pyproject.toml && \
-#     sed -i "s/graphiti-core\[falkordb\]>=[0-9]\+\.[0-9]\+\.[0-9]\+$/graphiti-core[neo4j,falkordb]==${GRAPHITI_CORE_VERSION}/" pyproject.toml && \
-#     echo "Regenerating lock file for PyPI graphiti-core..." && \
-#     rm -f uv.lock && \
-#     uv lock
+# Update path in mcp pyproject.toml to use /app instead of ../
+RUN sed -i 's|path = "\.\./", editable = true|path = "/app", editable = true|g' pyproject.toml
 
-# Copy local graphiti-core for development
-COPY ../ /app/graphiti-core/
+# Debug output
+RUN echo "=== /app contents ===" && ls -la /app/ && \
+    echo "=== mcp pyproject.toml [tool.uv.sources] ===" && \
+    grep -A 2 "\[tool.uv.sources\]" pyproject.toml
 
 # Install Python dependencies (exclude dev dependency group)
 RUN --mount=type=cache,target=/root/.cache/uv \
